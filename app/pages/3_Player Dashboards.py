@@ -50,6 +50,7 @@ with col2:
         del player_info['Full Name']
     else:
         st.header(player_info['Full Name'])
+        full_name = player_info['Full Name']
         del player_info['Full Name']
     if ('Class' in player_info):
         st.subheader(player_info['Class'])
