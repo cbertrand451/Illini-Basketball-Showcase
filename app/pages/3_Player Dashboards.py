@@ -82,105 +82,107 @@ with col3:
 col1, col2 = st.columns([1, 3])
 with col1:
     yr = st.selectbox("Choose Year", player_yrs)        
+year_n = float(yr[0:4])
+if year_n >= 1979:
+    # team dataset and player dataset
+    df_team, df_players = scrape_season_stats_w_players(yr)
+    #dropping the 'TM' row
+    df_players = df_players.drop(df_players.index[-1])
+    # Bio Link and FT% got switched for some reason
+    df_players['FT%'] = df_players['Bio Link'] 
+    # getting rid of the useless columns
+    df_players = df_players.drop(columns=['Season', '#', 'Bio Link'])
 
-# team dataset and player dataset
-df_team, df_players = scrape_season_stats_w_players(yr)
-#dropping the 'TM' row
-df_players = df_players.drop(df_players.index[-1])
-# Bio Link and FT% got switched for some reason
-df_players['FT%'] = df_players['Bio Link'] 
-# getting rid of the useless columns
-df_players = df_players.drop(columns=['Season', '#', 'Bio Link'])
+
+    # numeric columns
+    stats = ['GP', 'GS', 'Minutes', 'FG', '3PT', 'FT', 'Scoring', 'Rebounds', 'PF', 'AST', 'TO', 'STL', 'BLK', 'TOT', 'AVG', 'FGM', 'FGA', 'FG%', '3PTA', '3PT%', 'FTM', 'FTA', 'FT%']
+    #change those columns to be numeric dtypes
+    df_players[stats] = df_players[stats].apply(pd.to_numeric, errors='coerce')
+    # fixed the FT% column (it was whole numbers)
+    df_players['FT%'] = df_players['FT%'] / 1000
+    # tool to standardize the data
+    scaler = StandardScaler()
+    scaled = scaler.fit_transform(df_players[stats])
+    #standardized dataset
+    df_scaled = pd.DataFrame(scaled, columns=stats)
+    df_scaled['Player'] = df_players['Player'].values
+    #creating an argument case
+    filtered = df_scaled[df_scaled['Player'] == full_name]
+    if not filtered.empty:
+        player_row = filtered.iloc[0]
+    else:
+        raise ValueError(f"Player {full_name} not found in dataset...this may be due to season injury or special cases. Sorry for the inconvenience!")
+    #get the row of the person that user chose
+    player_row = df_scaled[df_scaled['Player'] == full_name].iloc[0]
+    team_avg = df_scaled[stats].mean()
+    #did this so I could diplsay the normal data under the visual
+    n_team_avg = round(df_players[stats].mean(), 3)
 
 
-# numeric columns
-stats = ['GP', 'GS', 'Minutes', 'FG', '3PT', 'FT', 'Scoring', 'Rebounds', 'PF', 'AST', 'TO', 'STL', 'BLK', 'TOT', 'AVG', 'FGM', 'FGA', 'FG%', '3PTA', '3PT%', 'FTM', 'FTA', 'FT%']
-#change those columns to be numeric dtypes
-df_players[stats] = df_players[stats].apply(pd.to_numeric, errors='coerce')
-# fixed the FT% column (it was whole numbers)
-df_players['FT%'] = df_players['FT%'] / 1000
-# tool to standardize the data
-scaler = StandardScaler()
-scaled = scaler.fit_transform(df_players[stats])
-#standardized dataset
-df_scaled = pd.DataFrame(scaled, columns=stats)
-df_scaled['Player'] = df_players['Player'].values
-#creating an argument case
-filtered = df_scaled[df_scaled['Player'] == full_name]
-if not filtered.empty:
-    player_row = filtered.iloc[0]
+    #Build radar plot
+    fig = go.Figure()
+
+    #Player line
+    fig.add_trace(go.Scatterpolar(
+        r=player_row[stats].values,
+        theta=stats,
+        fill='toself',
+        name=full_name, 
+        line_color='rgb(255, 95, 5)'
+    ))
+
+    #Team average line
+    fig.add_trace(go.Scatterpolar(
+        r=team_avg.values,
+        theta=stats,
+        fill='toself',
+        name='Team Average', 
+        line_color='rgb(211, 211, 211)'
+    ))
+
+    #Layout
+    fig.update_layout(
+        polar=dict(radialaxis=dict(visible=True)),
+        title="Player vs Team Average (Standardized)",
+        showlegend=True, 
+        width=450, 
+        height=700
+    )
+    #heres the chart
+    st.plotly_chart(fig, use_container_width=True)
+    #creating the team average row data
+    n_team_avg['Player'] = 'Team Average'
+    #new dataframe with just the team average and chosen player
+    df_players_w_avg = pd.concat([df_players, pd.DataFrame([n_team_avg])], ignore_index=True)
+    #show the df
+    st.write(df_players_w_avg[(df_players_w_avg['Player'] == full_name) | (df_players_w_avg['Player'] == 'Team Average')])
+
+    #in case people dont know the abbreviations
+    definitions = st.toggle("Show Terms")
+    if definitions:
+        st.markdown('**GP**: Games Played')
+        st.markdown('**GS**: Games Started')
+        st.markdown('**Minutes**: Minutes Played')
+        st.markdown('**FG**: Field Goals Made')
+        st.markdown('**3PT**: 3-Point Field Goals Made')
+        st.markdown('**FT**: Free Throws Made')
+        st.markdown('**Scoring**: Field Goal Percentage (decimal)')
+        st.markdown('**Rebounds**: Total Rebounds')
+        st.markdown('**PF**: Personal Fouls')
+        st.markdown('**AST**: Assists')
+        st.markdown('**TO**: Turnovers')
+        st.markdown('**STL**: Steals')
+        st.markdown('**BLK**: Blocks')
+        st.markdown('**TOT**: Total Points')
+        st.markdown('**AVG**: Average Points Per Game')
+        st.markdown('**FGM**: Field Goals Made')
+        st.markdown('**FGA**: Field Goals Attempted')
+        st.markdown('**FG%**: Field Goal Percentage')
+        st.markdown('**3PTA**: 3-Point Attempts')
+        st.markdown('**3PT%**: 3-Point Percentage')
+        st.markdown('**FTM**: Free Throws Made')
+        st.markdown('**FTA**: Free Throws Attempted')
+        st.markdown('**FT%**: Free Throw Percentage')
+
 else:
-    raise ValueError(f"Player {full_name} not found in dataset...this may be due to season injury or special cases. Sorry for the inconvenience!")
-#get the row of the person that user chose
-player_row = df_scaled[df_scaled['Player'] == full_name].iloc[0]
-team_avg = df_scaled[stats].mean()
-#did this so I could diplsay the normal data under the visual
-n_team_avg = round(df_players[stats].mean(), 3)
-
-
-#Build radar plot
-fig = go.Figure()
-
-#Player line
-fig.add_trace(go.Scatterpolar(
-    r=player_row[stats].values,
-    theta=stats,
-    fill='toself',
-    name=full_name, 
-    line_color='rgb(255, 95, 5)'
-))
-
-#Team average line
-fig.add_trace(go.Scatterpolar(
-    r=team_avg.values,
-    theta=stats,
-    fill='toself',
-    name='Team Average', 
-    line_color='rgb(211, 211, 211)'
-))
-
-#Layout
-fig.update_layout(
-    polar=dict(radialaxis=dict(visible=True)),
-    title="Player vs Team Average (Standardized)",
-    showlegend=True, 
-    width=450, 
-    height=700
-)
-#heres the chart
-st.plotly_chart(fig, use_container_width=True)
-#creating the team average row data
-n_team_avg['Player'] = 'Team Average'
-#new dataframe with just the team average and chosen player
-df_players_w_avg = pd.concat([df_players, pd.DataFrame([n_team_avg])], ignore_index=True)
-#show the df
-st.write(df_players_w_avg[(df_players_w_avg['Player'] == full_name) | (df_players_w_avg['Player'] == 'Team Average')])
-
-
-#in case people dont know the abbreviations
-definitions = st.toggle("Show Terms")
-if definitions:
-    st.markdown('**GP**: Games Played')
-    st.markdown('**GS**: Games Started')
-    st.markdown('**Minutes**: Minutes Played')
-    st.markdown('**FG**: Field Goals Made')
-    st.markdown('**3PT**: 3-Point Field Goals Made')
-    st.markdown('**FT**: Free Throws Made')
-    st.markdown('**Scoring**: Field Goal Percentage (decimal)')
-    st.markdown('**Rebounds**: Total Rebounds')
-    st.markdown('**PF**: Personal Fouls')
-    st.markdown('**AST**: Assists')
-    st.markdown('**TO**: Turnovers')
-    st.markdown('**STL**: Steals')
-    st.markdown('**BLK**: Blocks')
-    st.markdown('**TOT**: Total Points')
-    st.markdown('**AVG**: Average Points Per Game')
-    st.markdown('**FGM**: Field Goals Made')
-    st.markdown('**FGA**: Field Goals Attempted')
-    st.markdown('**FG%**: Field Goal Percentage')
-    st.markdown('**3PTA**: 3-Point Attempts')
-    st.markdown('**3PT%**: 3-Point Percentage')
-    st.markdown('**FTM**: Free Throws Made')
-    st.markdown('**FTA**: Free Throws Attempted')
-    st.markdown('**FT%**: Free Throw Percentage')
-
+    st.subheader("Statistical Data only available for 1979-80 teams -> present. You're too far back!", divider='orange')
