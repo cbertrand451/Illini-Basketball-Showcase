@@ -61,7 +61,6 @@ with col2:
         st.subheader(player_info['Class'])
         del player_info['Class']
     with st.container(border=True):
-        #st.markdown(player_yrs)
         for key in player_info:
             st.markdown(f"{key}: {player_info[key]}")
     st.subheader(f'Years @ UIUC: {len(player_yrs)}')
@@ -106,6 +105,12 @@ scaled = scaler.fit_transform(df_players[stats])
 #standardized dataset
 df_scaled = pd.DataFrame(scaled, columns=stats)
 df_scaled['Player'] = df_players['Player'].values
+#creating an argument case
+filtered = df_scaled[df_scaled['Player'] == full_name]
+if not filtered.empty:
+    player_row = filtered.iloc[0]
+else:
+    raise ValueError(f"Player {full_name} not found in dataset...this may be due to season injury or special cases")
 #get the row of the person that user chose
 player_row = df_scaled[df_scaled['Player'] == full_name].iloc[0]
 team_avg = df_scaled[stats].mean()
