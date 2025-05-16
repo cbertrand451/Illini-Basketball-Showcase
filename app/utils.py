@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-
+import re
 def player_scrape_header_info(url):
     res = requests.get(url)
     soup = BeautifulSoup(res.text, "html.parser")
@@ -147,3 +147,15 @@ def extract_player_table(table, season):
         rows.append(row_data)
 
     return pd.DataFrame(rows)
+
+def extract_background_image_url(url):
+    res = requests.get(url)
+    soup = BeautifulSoup(res.text, "html.parser")
+    div = soup.find("div", class_="sidearm-roster-player-image-historical")
+    if div and "style" in div.attrs:
+        style = div["style"]
+        # Use regex to extract the URL inside url('...')
+        match = re.search(r"url\('(.*?)'\)", style)
+        if match:
+            return match.group(1)
+    return None

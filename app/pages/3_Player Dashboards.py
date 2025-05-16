@@ -4,7 +4,8 @@ from geopy.geocoders import Nominatim
 import pandas as pd
 import plotly.graph_objects as go
 from sklearn.preprocessing import StandardScaler
-from utils import player_scrape_header_info, scrape_season_stats_w_players, extract_stat_table, extract_player_table
+import re
+from utils import player_scrape_header_info, scrape_season_stats_w_players, extract_stat_table, extract_player_table, extract_background_image_url
 
 #setting up page configs
 st.set_page_config(page_title="Player Dashboard", 
@@ -32,6 +33,10 @@ del player_info['Last Name']
 #st.markdown(player_info)
 with col1:
     if ('Image URL' in player_info):
+        st.image(player_info['Image URL'], use_container_width=True)
+        del player_info['Image URL']
+    elif (extract_background_image_url(player_url) is not None):
+        player_info['Image URL'] = extract_background_image_url(player_url)
         st.image(player_info['Image URL'], use_container_width=True)
         del player_info['Image URL']
     else:
