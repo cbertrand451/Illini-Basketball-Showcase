@@ -185,4 +185,4 @@ if year_n >= 1979:
         st.markdown('**FT%**: Free Throw Percentage')
 
 else:
-    st.subheader("Statistical Data only available for 1979-80 teams -> present. You're too far back!", divider='orange')
+    st.subheader("Statistical Data only available for 1979-80 -> present. You're too far back!", divider='orange')
