@@ -26,3 +26,4 @@ with col3:
     st.markdown("This tool allows the user to select a player and input projected misnutes, usage increases, etc. " \
     "A model will predict a multitude of stats based on those inputs like PPG, RPG, APG. A player can be assesed with 'what-if' models as well, which would display their " \
     "success on the court if they had more or less playtime.")
+"---"
