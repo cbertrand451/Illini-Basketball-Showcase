@@ -116,36 +116,49 @@ def extract_stat_table(table, season):
 
 
 def extract_player_table(table, season):
-    headers = [th.get_text(strip=True) for th in table.find("thead").find_all("th")]
-    rows = []
+    thead_rows = table.find("thead").find_all("tr")
+    row1 = thead_rows[0].find_all("th")
+    row2 = thead_rows[1].find_all("th")
 
+    headers = []
+    group_labels = []
+    for th in row1:
+        colspan = int(th.get("colspan", 1))
+        rowspan = int(th.get("rowspan", 1))
+        label = th.get_text(strip=True)
+        if rowspan == 2:
+            headers.append(label)
+        else:
+            group_labels.extend([label] * colspan)
+
+    # Combine ambiguous headers like 'TOT' and 'AVG' with their group labels
+    for i, th in enumerate(row2):
+        label = th.get_text(strip=True)
+        if label in ['TOT', 'AVG']:
+            headers.append(f"{group_labels[i]} {label}")
+        else:
+            headers.append(label)
+
+    # Extract the rows
+    rows = []
     for tr in table.find("tbody").find_all("tr"):
         tds = tr.find_all("td")
         if not tds or len(tds) < 2:
             continue
-
         row_data = {}
         for i in range(min(len(headers), len(tds))):
             header = headers[i]
+            cell = tds[i].get_text(strip=True)
 
             if header == "Player":
                 name_tag = tds[i].find("a")
-                raw_name = name_tag.get_text(strip=True) if name_tag else tds[i].get_text(strip=True)
-
-                # Convert "Last, First" → "First Last"
+                raw_name = name_tag.get_text(strip=True) if name_tag else cell
                 if "," in raw_name:
                     last, first = raw_name.split(",", 1)
-                    formatted_name = first.strip() + " " + last.strip()
-                else:
-                    formatted_name = raw_name.strip()
-
-                row_data["Player"] = formatted_name
-            else:
-                row_data[header] = tds[i].get_text(strip=True)
-
-        row_data["Season"] = season
+                    cell = f"{first.strip()} {last.strip()}"
+            row_data[header] = cell
         rows.append(row_data)
-
+    
     return pd.DataFrame(rows)
 
 def extract_background_image_url(url):
@@ -159,3 +172,41 @@ def extract_background_image_url(url):
         if match:
             return match.group(1)
     return None
+
+def fix_df(players_df):
+    players_df_n = players_df.copy()
+
+    # Perform the column fixes
+    players_df_n.loc[:, 'Minutes TOT'] = players_df['PF']
+    players_df_n.loc[:, 'Minutes AVG'] = players_df['AST']
+    players_df_n.loc[:, 'FGM'] = players_df['TO']
+    players_df_n.loc[:, 'FGA'] = players_df['STL']
+    players_df_n.loc[:, 'FG%'] = players_df['BLK']
+    players_df_n.loc[:, '3PT'] = players_df['Bio Link']
+    players_df_n.loc[:, '3PTA'] = players_df['Minutes TOT']
+    players_df_n.loc[:, '3PT%'] = players_df['Minutes AVG']
+    players_df_n.loc[:, 'FTM'] = players_df['FGM']
+    players_df_n.loc[:, 'FTA'] = players_df['FGA']
+    players_df_n.loc[:, 'FT%'] = players_df['FG%']
+    players_df_n.loc[:, 'PTS'] = players_df['3PT']
+    players_df_n.loc[:, 'Scoring AVG'] = players_df['3PTA']
+    players_df_n.loc[:, 'OFF'] = players_df['3PT%']
+    players_df_n.loc[:, 'DEF'] = players_df['FTM']
+    players_df_n.loc[:, 'Rebounds TOT'] = players_df['FTA']
+    players_df_n.loc[:, 'Rebounds AVG'] = players_df['FT%']
+    players_df_n.loc[:, 'PF'] = players_df['PTS']
+    players_df_n.loc[:, 'AST'] = players_df['Scoring AVG']
+    players_df_n.loc[:, 'TO'] = players_df['OFF']
+    players_df_n.loc[:, 'STL'] = players_df['DEF']
+    players_df_n.loc[:, 'BLK'] = players_df['Rebounds TOT']
+    players_df_n.loc[:, 'Bio Link'] = players_df['Rebounds AVG']
+    desired_order = [
+        '#', 'Player', 'GP', 'GS',
+        'Minutes TOT', 'Minutes AVG', 'FGM', 'FGA', 'FG%',
+        '3PT', '3PTA', '3PT%', 'FTM', 'FTA', 'FT%',
+        'PTS', 'Scoring AVG', 'OFF', 'DEF',
+        'Rebounds TOT', 'Rebounds AVG', 'PF', 'AST', 'TO', 'STL', 'BLK', 'Bio Link'
+    ]
+
+    players_df_n = players_df_n[desired_order]
+    return(players_df_n)
