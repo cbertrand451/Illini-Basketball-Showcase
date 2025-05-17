@@ -14,7 +14,7 @@ st.set_page_config(page_title="Player Dashboard",
 st.title('Player Dashboard')
 st.header("", divider='orange')
 #loading the player list
-with open('data/player_list.json', 'r') as f:
+with open('data/processed/player_list.json', 'r') as f:
     data = json.load(f)
 # all of the player names
 player_options = list(data.keys())
@@ -40,7 +40,7 @@ with col1:
         if player_info['Image URL'] != 'https://s3.amazonaws.com/assets.sidearmsports.com/images/generic_image_missing.png':
             st.image(player_info['Image URL'], use_container_width=True)
         else:
-            st.image('data/MBB_logo.webp', caption='Image not found')
+            st.image('data/images/MBB_logo.webp', caption='Image not found')
         del player_info['Image URL']
     if ('Instagram URL' in player_info):
         st.link_button('Instagram URL', player_info['Instagram URL'], use_container_width=True)
@@ -102,9 +102,9 @@ if year_n >= 1979:
     #change those columns to be numeric dtypes
     df_players[stats] = df_players[stats].apply(pd.to_numeric, errors='coerce')
 
-    df_players['EFF'] = (df_players['PTS'] + df_players['Rebounds TOT'] + df_players['AST'] + 
+    df_players['EFF'] = round((df_players['PTS'] + df_players['Rebounds TOT'] + df_players['AST'] + 
                                 df_players['STL'] + df_players['BLK'] - (df_players['FGA'] 
-                                - df_players['FGM']) - (df_players['FTA'] - df_players['FTM']) - df_players['TO']) / df_players['GP']
+                                - df_players['FGM']) - (df_players['FTA'] - df_players['FTM']) - df_players['TO']) / df_players['GP'], 3)
     
     stats = ['GP', 'GS', 'Minutes TOT', 
                              'Minutes AVG', 'FGM', 'FGA', 'FG%', '3PT', '3PTA', 
