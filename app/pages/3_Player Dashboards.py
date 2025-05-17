@@ -3,6 +3,7 @@ import json
 from geopy.geocoders import Nominatim
 import pandas as pd
 import plotly.graph_objects as go
+import pydeck as pdk
 from sklearn.preprocessing import StandardScaler
 import re
 from utils import player_scrape_header_info, scrape_season_stats_w_players, extract_stat_table, extract_player_table, extract_background_image_url, fix_df
@@ -50,7 +51,7 @@ with col1:
         del player_info['NIL URL']
 with col2:
     if ('Jersey Number' in player_info):
-        st.header(player_info['Jersey Number'] + ' - ' + player_info['Full Name'])
+        st.header(f":orange[{player_info['Jersey Number']}] - {player_info['Full Name']}")
         del player_info['Jersey Number']
         full_name = player_info['Full Name']
         del player_info['Full Name']
@@ -66,18 +67,49 @@ with col2:
             st.markdown(f"{key}: {player_info[key]}")
     st.subheader(f'Years @ UIUC: {len(player_yrs)}')
 with col3:
-    if ('Hometown' in player_info):
-        data = []
+    if 'Hometown' in player_info:
         geolocator = Nominatim(user_agent="streamlit-geocoder")
         location = geolocator.geocode(player_info['Hometown'])
+
         if location:
-            data.append({'city': player_info['Hometown'], 'lat': location.latitude, 'lon': location.longitude})
-        df = pd.DataFrame(data)
-        st.map(df[['lat', 'lon']], use_container_width=True)
-        st.caption(f'{full_name} Hometown')
+            df = pd.DataFrame([{
+                'city': player_info['Hometown'],
+                'lat': location.latitude,
+                'lon': location.longitude
+            }])
+
+            # Create the pydeck layer with custom color
+            layer = pdk.Layer(
+                "ScatterplotLayer",
+                data=df,
+                get_position='[lon, lat]',
+                get_color='[255, 95, 5, 160]',
+                get_radius=8,
+                radius_units='pixels',
+                
+                pickable=True
+            )
+
+            # Define the map view
+            view_state = pdk.ViewState(
+                latitude=location.latitude,
+                longitude=location.longitude,
+                zoom=10,
+                pitch=0
+            )
+
+            # Display map
+            st.pydeck_chart(pdk.Deck(
+                layers=[layer], 
+                initial_view_state=view_state, 
+                map_style="mapbox://styles/mapbox/light-v9",
+                ))
+            st.caption(f"{full_name}'s Hometown")
+
+        else:
+            st.markdown('Hometown not found')
     else:
         st.markdown('Hometown not found')
-    
 
 '---'
 col1, col2 = st.columns([1, 3])
