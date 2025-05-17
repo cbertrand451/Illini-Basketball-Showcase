@@ -16,6 +16,13 @@ with col1:
     "average, or chose another year to coompare to. Statistics are backed up with interactive visuals that display the history of the team!")
 with col2:
     st.subheader("Player Dashboard", divider='orange')
-
+    st.markdown("Select any player from the history of the UIUC basketball team. Player's headshot and summary information is scraped from the official fighting illini website. Player's homewtown is " \
+    "visible on an interactive map." \
+    "Discover analytics with a season-by-season stat line. Efficiency scores " \
+    "based on John Hollinger's basketball rating are calculated using season stats on tyhe player. A radar chart is displayed to visualize the player's stats compard to the team's averages" \
+    "that season. ")
 with col3:
     st.subheader("Performance Predictor", divider='blue')
+    st.markdown("This tool allows the user to select a player and input projected misnutes, usage increases, etc. " \
+    "A model will predict a multitude of stats based on those inputs like PPG, RPG, APG. A player can be assesed with 'what-if' models as well, which would display their " \
+    "success on the court if they had more or less playtime.")
