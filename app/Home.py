@@ -1,9 +1,11 @@
 import streamlit as st
+import pickle
 
 st.set_page_config(page_title="Illini Basketball Hub", layout="wide")
 
 st.title("Fighting Illini Men's Basketball Database")
 st.subheader(":orange[An Interactive Experience into the UIUC Roster]")
+st.caption('By Colin Bertrand')
 "---"
 st.subheader("Where to Start")
 st.markdown("There are many tools available on this site. Check out these pages to explore the statistics and players that go into the UIUC Men's basketball roster.")
@@ -29,3 +31,12 @@ with col3:
 "---"
 
 st.header("Fighting Illini Men's Basketball History")
+with open('data\processed\mbb_history.json', 'rb') as f:
+    titles_dict = pickle.load(f)
+
+for title, df in titles_dict.items():
+    st.subheader(title)
+    if len(df) == 1:
+        st.markdown(df[0][0])
+    else:
+        st.table(df.to_numpy())
