@@ -13,7 +13,8 @@ st.set_page_config(page_title="Player Dashboard",
                    layout="wide")
 
 st.title('Player Dashboard')
-st.header("", divider='orange')
+st.subheader(":orange[Featuring Detailed Player Information]")
+"---"
 #loading the player list
 with open('data/processed/player_list.json', 'r') as f:
     data = json.load(f)

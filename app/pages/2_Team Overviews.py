@@ -1,3 +1,7 @@
 import streamlit as st
 
-st.title("Team stuff")
+
+st.set_page_config(page_title="Team Overviews", layout="wide")
+st.title("Team Overviews")
+st.subheader(":orange[Featuring Detailed Team Information]")
+"---"
