@@ -1,0 +1,11 @@
+streamlit
+pickle
+bs4
+urllib
+json
+re
+pandas
+geopy
+plotly
+pydeck
+sklearn

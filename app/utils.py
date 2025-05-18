@@ -2,6 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import re
+
+
 def player_scrape_header_info(url):
     res = requests.get(url)
     soup = BeautifulSoup(res.text, "html.parser")
