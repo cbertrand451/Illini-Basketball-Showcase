@@ -39,4 +39,17 @@ for title, df in titles_dict.items():
     if len(df) == 1:
         st.markdown(df[0][0])
     else:
-        st.table(df.to_numpy())
+        df.index = range(1, len(df) + 1)
+        df.index.name = 'Rank'
+        i1 = title.split('By')[1].strip()
+        for col in df:
+            if col == 0:
+                df = df.drop(columns=[col])
+            if col == 1:
+                df = df.rename(columns={1: i1})
+            if col == 2 and ('-' in df[col].iloc[0]):
+                df = df.rename(columns={2:'W/L'})
+            else:
+                df = df.rename(columns={col:'Year'})
+
+        st.table(df)
