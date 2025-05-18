@@ -34,11 +34,16 @@ st.header("Fighting Illini Men's Basketball History")
 with open('data\processed\mbb_history.json', 'rb') as f:
     titles_dict = pickle.load(f)
 
+
+col1, col2 = st.columns([2, 3])
+
 for title, df in titles_dict.items():
-    st.subheader(title)
     if len(df) == 1:
-        st.markdown(df[0][0])
+        with col1:
+            st.subheader(f':orange[{title}]')
+            st.markdown(df[0][0])
     else:
+        st.subheader(f':orange[{title}]')
         df.index = range(1, len(df) + 1)
         df.index.name = 'Rank'
         i1 = title.split('By')[1].strip()
