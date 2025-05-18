@@ -43,6 +43,7 @@ for title, df in titles_dict.items():
         with col1:
             st.subheader(f':orange[{title}]')
             st.markdown(df[0][0])
+            "---"
     else:
         st.subheader(f':orange[{title}]')
         df.index = range(1, len(df) + 1)
@@ -57,5 +58,6 @@ for title, df in titles_dict.items():
                 df = df.rename(columns={2:'W/L'})
             else:
                 df = df.rename(columns={col:'Year'})
-
+        
         st.table(df)
+        "---"
