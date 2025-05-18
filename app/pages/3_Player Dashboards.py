@@ -154,7 +154,7 @@ if year_n >= 1979:
     if not filtered.empty:
         player_row = filtered.iloc[0]
     else:
-        raise ValueError(f"Player {full_name} not found in dataset...this may be due to season injury or special cases. Sorry for the inconvenience!")
+        raise ValueError(f"Player {full_name} not found in dataset...this is likely due to a redshirted season. This may also be due to season injury or special case. Sorry for the inconvenience!")
     #get the row of the person that user chose
     player_row = df_scaled[df_scaled['Player'] == full_name].iloc[0]
     team_avg = df_scaled[stats].mean()

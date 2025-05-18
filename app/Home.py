@@ -27,3 +27,5 @@ with col3:
     "A model will predict a multitude of stats based on those inputs like PPG, RPG, APG. A player can be assesed with 'what-if' models as well, which would display their " \
     "success on the court if they had more or less playtime.")
 "---"
+
+st.header("Fighting Illini Men's Basketball History")
