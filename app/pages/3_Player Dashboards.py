@@ -202,19 +202,33 @@ if year_n >= 1979:
     with col2:
         st.markdown("")
         st.subheader(f"Efficiency Rating: {player_row_n['EFF']:.2f}")
-
+    cola, colb = st.columns(2)
     #heres the chart
-    st.plotly_chart(fig, use_container_width=True)
+    with cola:
+        st.plotly_chart(fig, use_container_width=True)
     #creating the team average row data
     n_team_avg['Player'] = 'Team Average'
-    #new dataframe with just the team average and chosen player
-    df_players_w_avg = pd.concat([df_players, pd.DataFrame([n_team_avg])], ignore_index=True)
+    #reate comparison dataframe with player and team average
+    player_data = df_players[df_players['Player'] == full_name].iloc[0]
+    comparison_df = pd.DataFrame({
+        'Statistic': player_data.index,
+        'Player': player_data.values,
+        'Team Average': [n_team_avg.get(col, '') for col in player_data.index]
+    })
+    df_display = comparison_df[comparison_df['Statistic'] != 'Player']
 
     #show the df
-    st.write(df_players_w_avg[(df_players_w_avg['Player'] == full_name) | (df_players_w_avg['Player'] == 'Team Average')])
+    with colb:
+        st.dataframe(df_display, use_container_width=True, hide_index=True, column_config={
+        "Statistic": st.column_config.TextColumn(
+            "Statistic",
+            width="medium",
+            help="Statistic name"
+        ),
+    })
 
     #in case people dont know the abbreviations
-    definitions = st.toggle("Show Terms")
+    definitions = st.toggle("Show Terms Key")
     if definitions:
         st.markdown('**GP**: Games Played')
         st.markdown('**GS**: Games Started')
