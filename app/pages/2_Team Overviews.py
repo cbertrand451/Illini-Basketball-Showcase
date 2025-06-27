@@ -51,7 +51,7 @@ stats_options = ['Total Points', 'Points Per Game', 'Scoring Margin', 'FG Made-A
                  'Assist/Turnover Ratio', 'Points Off Turnovers', 'Total Steals', 'Steals Per Game', 
                  'Total Blocks', 'Blocks Per Game', 'Total Attendance', 'Attendance Per Game']
 
-st.header('Hi')
+st.header('Historical Performance Statistics')
 bar, options = st.columns(2)
 
 with bar:
