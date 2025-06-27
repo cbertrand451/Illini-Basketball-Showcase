@@ -9,6 +9,8 @@ import re
 from geopy.geocoders import Nominatim
 import time
 import pydeck as pdk
+from colors import ILLINOIS_COLORS, ILLINOIS_BLUE, ILLINOIS_GRAY, ILLINOIS_ORANGE
+
 
 
 st.set_page_config(page_title="Team Overviews", layout="wide")
@@ -49,15 +51,66 @@ stats_options = ['Total Points', 'Points Per Game', 'Scoring Margin', 'FG Made-A
                  'Assist/Turnover Ratio', 'Points Off Turnovers', 'Total Steals', 'Steals Per Game', 
                  'Total Blocks', 'Blocks Per Game', 'Total Attendance', 'Attendance Per Game']
 
-stat_bar = st.selectbox('Select a Statistic', stats_options)
+st.header('Hi')
+bar, options = st.columns(2)
+
+with bar:
+    stat_bar = st.selectbox('Select a Statistic', stats_options)
+with options:
+    teams_options = st.pills('Choose teams to display', ['Illinois', 'Opponents'], default='Illinois', selection_mode='multi')
 
 df_illinois = season_stats[season_stats['Team'] == 'Illinois']
-if 'Season' in df_illinois.columns:
-    df_illinois = df_illinois.sort_values(by='Season', ascending=True)
-    st.subheader(f"{stat_bar} Over Time")
-    st.line_chart(df_illinois.set_index('Season')[stat_bar])
-else:
-    st.error("No 'Season' column found in the dataset.")
+df_opponents = season_stats[season_stats['Team'] == 'Opponents']
+
+# Check if both teams are selected
+if len(teams_options) == 2:
+    if 'Season' in season_stats.columns:
+        # Sort both datasets by season
+        df_illinois = df_illinois.sort_values(by='Season', ascending=True)
+        df_opponents = df_opponents.sort_values(by='Season', ascending=True)
+        
+        st.subheader(f"{stat_bar} Over Time")
+        
+
+        
+        # Properly merge the data by season
+        chart_data = pd.merge(
+            df_illinois[['Season', stat_bar]], 
+            df_opponents[['Season', stat_bar]], 
+            on='Season', 
+            suffixes=('_Illinois', '_Opponents')
+        )
+        
+        # Rename columns for the chart
+        chart_data = chart_data.rename(columns={
+            f'{stat_bar}_Illinois': 'Illinois',
+            f'{stat_bar}_Opponents': 'Opponents'
+        }).set_index('Season')
+        
+        st.line_chart(chart_data, color=[ILLINOIS_ORANGE, ILLINOIS_BLUE])
+    else:
+        st.error("No common seasons found between Illinois and Opponents data.")
+    
+# Check if only Illinois is selected
+elif 'Illinois' in teams_options and 'Opponents' not in teams_options:
+    if 'Season' in df_illinois.columns:
+        df_illinois = df_illinois.sort_values(by='Season', ascending=True)
+        st.subheader(f"{stat_bar} Over Time")
+        st.line_chart(df_illinois.set_index('Season')[stat_bar], color=ILLINOIS_ORANGE)
+    else:
+        st.error("No 'Season' column found in the dataset.")
+# Check if only Opponents is selected
+elif 'Opponents' in teams_options and 'Illinois' not in teams_options:
+    if 'Season' in df_opponents.columns:
+        df_opponents = df_opponents.sort_values(by='Season', ascending=True)
+        st.subheader(f"{stat_bar} Over Time")
+        st.line_chart(df_opponents.set_index('Season')[stat_bar], color=ILLINOIS_BLUE)
+    else:
+        st.error("No 'Season' column found in the dataset.")
+# Handle case when no teams are selected
+elif len(teams_options) == 0:
+    st.warning("Please select at least one team to display.")
+
 
 year_bar = st.selectbox('Select a Year for Details', seasons)
 df_selected_ill = df_illinois[df_illinois['Season'] == year_bar]
@@ -154,14 +207,6 @@ if season_players:
     with col1:
         st.metric("Roster Size", len(season_players))
     
-    # Illinois brand colors
-    ILLINOIS_ORANGE = '#E84A27'  
-    ILLINOIS_BLUE = '#13294B'    
-    ILLINOIS_LIGHT_BLUE = '#1F4E79'  
-    ILLINOIS_GRAY = '#6C757D'    
-
-    # Custom color palette for multiple categories
-    ILLINOIS_COLORS = [ILLINOIS_ORANGE, ILLINOIS_BLUE, ILLINOIS_LIGHT_BLUE, ILLINOIS_GRAY, '#FF6B35', '#4A90E2']
 
     # Class Distribution Analysis
     #st.subheader("Class Year Distribution")
@@ -265,8 +310,8 @@ if season_players:
 
         if not geo_df.empty:
             st.markdown("**Player Hometowns Map:**")
-            #color code if in state or not
-            geo_df['color'] = geo_df['is_illinois'].map(lambda x: [232, 74, 39, 160] if x else [19, 41, 75, 160])
+            #color code if in state or not (same as illinois orange and blue)
+            geo_df['color'] = geo_df['is_illinois'].map(lambda x: [255, 95, 5, 160] if x else [19, 41, 75, 160])
             layer = pdk.Layer(
                 "ScatterplotLayer",
                 data=geo_df,
