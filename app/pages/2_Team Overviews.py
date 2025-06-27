@@ -219,7 +219,7 @@ if season_players:
         st.warning("Class data not available for this season.")
     
     # Geographic Distribution
-    st.subheader("Geographic Distribution")
+    st.subheader(f"{year_bar} Geographic Distribution")
     
     @st.cache_data
     def get_geographic_data_for_season(selected_season):
@@ -299,7 +299,7 @@ if season_players:
         st.warning("Geographic data not available for this season.")
     
     # Height and Weight Analysis
-    st.subheader("Height and Weight Analysis")
+    st.subheader(f"{year_bar} Height and Weight Analysis")
     
     @st.cache_data
     def get_physical_data_for_season(selected_season):
