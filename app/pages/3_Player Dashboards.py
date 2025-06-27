@@ -7,6 +7,7 @@ import pydeck as pdk
 from sklearn.preprocessing import StandardScaler
 import re
 from utils import player_scrape_header_info, scrape_season_stats_w_players, extract_stat_table, extract_player_table, extract_background_image_url, fix_df
+from colors import ILLINOIS_BLUE, ILLINOIS_ORANGE, ILLINOIS_GRAY
 
 #setting up page configs
 st.set_page_config(page_title="Player Dashboard", 
@@ -170,22 +171,22 @@ if year_n >= 1979:
     #Build radar plot
     fig = go.Figure()
 
-    #Player line
-    fig.add_trace(go.Scatterpolar(
-        r=player_row[stats].values,
-        theta=stats,
-        fill='toself',
-        name=full_name, 
-        line_color='rgb(255, 95, 5)'
-    ))
-
     #Team average line
     fig.add_trace(go.Scatterpolar(
         r=team_avg.values,
         theta=stats,
         fill='toself',
         name='Team Average', 
-        line_color='rgb(211, 211, 211)'
+        line_color=ILLINOIS_GRAY
+    ))
+
+    #Player line
+    fig.add_trace(go.Scatterpolar(
+        r=player_row[stats].values,
+        theta=stats,
+        fill='toself',
+        name=full_name, 
+        line_color=ILLINOIS_ORANGE
     ))
 
     #Layout

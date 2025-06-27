@@ -14,10 +14,13 @@ st.markdown("There are many tools available on this site. Check out these pages 
 col1, null1, col2, null2, col3 = st.columns([2, 0.5, 2, 0.5, 2])
 with col1:
     st.subheader("Team Overview", divider='blue')
-    st.markdown("Choose a season and explore team statistics from that year. These include **season averages** and **shooting " \
-    "percentages** to **roster details** like **height**, **weight**, **hometown**, and **class balance**. Compare a specific year's roster to " \
-    "the all-time Illinois average or to another selected season. All statistics are supported with **interactive visuals** that " \
-    "highlight the rich history of Illini basketball.")
+    st.markdown("""
+                The **Team Overviews** page provides **interactive statistical analysis** 
+                of Illinois basketball performance over time. Users can select from **28 different metrics** 
+                and compare **Illinois vs. Opponents** using **branded line charts**. 
+                The page includes **season-specific details**, **roster analysis** with **class distributions**, 
+                **geographic mapping** of player hometowns, and **physical characteristics** analysis. 
+                """)
 with col2:
     st.subheader("Player Dashboard", divider='orange')
     st.markdown("Select any player from the history of the Illinois men's basketball team. Each player's **headshot** and " \
